@@ -1,8 +1,8 @@
-### function requires #Data #Code #sampleID #siteID #Abundance #Taxa
+### function requires columns containing: #Data #Code #sampleID #siteID #Abundance #Taxa #Alk
 
 darleqFunc <- function(diatomTDI2){
   
-  require(lubridate)
+  require(lubridate) # for Date/Time manipulation - must be installed
   
   taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  # get taxa list and scores
   diatomTDI2 <- merge(diatomTDI2,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
