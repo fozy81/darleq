@@ -39,7 +39,8 @@ darleqFunc <- function(diatomTDI2){
 
   
  dataf <- lapply(split(diatomTDI2, diatomTDI2$SampleID), function(TDI){ #creates a new function which applies a series of commands on the split data by sample ID  
-  ## Abundances & Sums
+  
+   ## Abundances & Sums:
   
   sumAbund <- sum(TDI$Abundance[TDI$Planktic != TRUE]) # sum abundance but exclude planktonic
   tdi3SumAbund <- sum(TDI$Abundance[TDI$TDI3 > 0])
@@ -49,7 +50,7 @@ darleqFunc <- function(diatomTDI2){
   allTaxaAbund4 <-  sum(TDI$Abundance[TDI$TDI4 >= 0]) # count all taxa abundance checking TDI.x field is not null/na 
   notPlankticAbund <- sum(TDI$Abundance[TDI$Planktic == FALSE]) # count non-planktonic taxa to fit with NEMS field: 'Abundance of non-planktonic taxa'
   
-  #### percentages TDI4
+  #### percentages TDI4:
   
   plankticAbund <- sum(TDI$Abundance[TDI$Planktic == TRUE]) # count planktonic taxa
   plankticPercent <- (plankticAbund / allTaxaAbund4) * 100 # percentage planktonic using TDI4
@@ -58,7 +59,7 @@ darleqFunc <- function(diatomTDI2){
   organicAbund <- sum(TDI$Abundance[TDI$OrganicTolerant == TRUE])  # sum abundance of organic taxa
   organicPercent <- (organicAbund / allTaxaAbund4) * 100 # percentage organic using TDI4
   
-  #### percentages TDI3
+  #### percentages TDI3:
   
   plankticAbund3 <- sum(TDI$Abundance[TDI$Planktic == TRUE]) # count planktonic taxa
   plankticPercent3 <- (plankticAbund3 / allTaxaAbund3) * 100 # percentage planktonic using TDI3
@@ -67,7 +68,7 @@ darleqFunc <- function(diatomTDI2){
   organicAbund3 <- sum(TDI$Abundance[TDI$OrganicTolerant == TRUE])  # sum abundance of organic taxa
   organicPercent3 <- (organicAbund3 / allTaxaAbund3) * 100 # percentage organic using TDI3
   
-  #### TDI3 & TDI4 & eTDI4 & eTDI3 scores
+  #### TDI3 & TDI4 & eTDI4 & eTDI3 scores:
   
   as <- sum(TDI$score)
   as3 <- sum(TDI$score3)
@@ -82,7 +83,7 @@ darleqFunc <- function(diatomTDI2){
   samplenumber <- unique(TDI$SampleID)
   #loc <- unique(TDI$Loc.x)
   
-  ### Loch LTDI2 scores
+  ### Loch LTDI2 scores:
   
   lochAbundsum <- sum(TDI$Abundance) # [TDI$LTDI2 > 0]) should this exclude zero scoring taxa? -
   LTDI4SumAbund <- sum(TDI$scoreL4)
@@ -90,7 +91,7 @@ darleqFunc <- function(diatomTDI2){
   lochTDI4 <- (w * 25) - 25
   lochEQR4 <- (100 - (lochTDI4)) / (100 - (unique(TDI$LochRefValue2)))
   
-  ### Loch LTDI1 scores
+  ### Loch LTDI1 scores:
   
   totalabundsum <- sum(TDI$Abundance)
   lochAbundsum2 <- sum(TDI$Abundance[TDI$LTDI1 > 0]) # should this exclude zero scoring taxa? -
