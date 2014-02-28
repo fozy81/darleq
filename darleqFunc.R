@@ -1,11 +1,13 @@
 darleqFunc <- function(diatomTDI2){
   
-  
   require(lubridate)
-  taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  
-  diatomTDI2 <- merge(diatomTDI2,taxaList,by.x="Code", by.y="TaxonId")
-  diatomTDI2$Alk <- as.numeric(diatomTDI2$Alk)
   
+  taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  # get taxa list and scores
+  diatomTDI2 <- merge(diatomTDI2,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
+  
+  ## tidy up data:
+  
+  diatomTDI2$Alk <- as.numeric(diatomTDI2$Alk)
   diatomTDI2$Alk[diatomTDI2$Alk > 250] <- 250
   diatomTDI2$TDI3[which(is.na(diatomTDI2$TDI3))] <- 0 # remove NAs for lapply function in next section
   diatomTDI2$TDI4[which(is.na(diatomTDI2$TDI4))] <- 0
@@ -14,7 +16,7 @@ darleqFunc <- function(diatomTDI2){
   diatomTDI2$LTDI3[which(is.na(diatomTDI2$LTDI3))] <- 0
   # diatomTDI2$LTDLR[which(is.na(diatomTDI2$LTDLR))] <- 0 # remove NAs for lapply function in next section
   diatomTDI2$TDI4 <-  as.numeric(diatomTDI2$TDI4)
-  diatomTDI2$TDI4[diatomTDI2$TDI4 == "NA"] <-  0
+  diatomTDI2$TDI4[diatomTDI2$TDI4 == "NA"] <-  0 # get rid of NAs
   diatomTDI2$TDI3 <-  as.numeric(diatomTDI2$TDI3)
   diatomTDI2$TDI3[diatomTDI2$TDI3 == "NA"] <-  0
   diatomTDI2$Abundance <- as.numeric(diatomTDI2$Abundance)
@@ -36,8 +38,7 @@ darleqFunc <- function(diatomTDI2){
   
 
   
- dataf <- lapply(split(diatomTDI2, diatomTDI2$SampleID), function(TDI){ #creates a new function which applies a series of commands on the split data by sample number
-  
+ dataf <- lapply(split(diatomTDI2, diatomTDI2$SampleID), function(TDI){ #creates a new function which applies a series of commands on the split data by sample ID  
   ## Abundances & Sums
   
   sumAbund <- sum(TDI$Abundance[TDI$Planktic != TRUE]) # sum abundance but exclude planktonic
