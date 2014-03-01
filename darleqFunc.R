@@ -8,13 +8,9 @@ darleqFunc <- function(diatomTDI){
   
   ## format data and :
   
-  diatomTDI$Alk <- as.numeric(diatomTDI$Alk)
   diatomTDI$Alk[diatomTDI$Alk > 250] <- 250  # Alkalinity capped at 250 according to method statement?
-  diatomTDI$TDI4 <-  as.numeric(diatomTDI$TDI4)
-  diatomTDI$TDI3 <-  as.numeric(diatomTDI$TDI3)
-  diatomTDI$Abundance <- as.numeric(diatomTDI$Abundance)
-  diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value
-  diatomTDI$score3 <- diatomTDI$TDI3 * diatomTDI$Abundance # create scores for TDI3 'as' value
+  diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value (abundance * TDI3 score)
+  diatomTDI$score3 <- diatomTDI$TDI3 * diatomTDI$Abundance # create scores for TDI3 'as' value  (abundance * TDI4 score)
   diatomTDI$scoreL4 <- diatomTDI$LTDI2 * diatomTDI$Abundance # create scores for LTDI2 'as' value
   diatomTDI$scoreL3 <- diatomTDI$LTDI1 * diatomTDI$Abundance # create scores for LTDI2 'as' value + for NEMS TDi3 use $LTDLR for mastertaxonlist use $LTDI1
   diatomTDI$Date <- as.Date(diatomTDI$Date, "%d-%b-%Y")
@@ -62,12 +58,12 @@ darleqFunc <- function(diatomTDI){
     outDF$tdi3EQR <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
     outDF$SiteID <- unique(TDI$SiteID)
     outDF$date <- unique(TDI$Date)
-    outDF$sampleID <- unique(TDI$SampleID)
+    outDF$SampleID <- unique(TDI$SampleID)
       
     ### Loch LTDI2 scores:
     
     outDF$sumLTDI2 <- sum(TDI$Abundance[TDI$LTDI2 > 0],na.rm=TRUE) #  should this exclude zero scoring taxa? -
-    outDF$LTDI4SumAbund <- sum(TDI$scoreL4,na.rm=TRUE)
+    outDF$LTDI4SumAbund <- sum(TDI$scoreL4,na.rm=TRUE) # sum of 
     outDF$w <- outDF$LTDI4SumAbund / outDF$sumLTDI2
     outDF$LTDI2 <- (outDF$w * 25) - 25
     outDF$'EQR LTDI2' <- (100 - (outDF$LTDI2)) / (100 - (unique(TDI$eLTDI2)))
@@ -88,8 +84,9 @@ darleqFunc <- function(diatomTDI){
   
   dataTDI <- data.frame(do.call("rbind",dataTDI)) # combines lits into dataframe using useful column names we have created
   row.names(dataTDI) <- NULL  # remove row names not required for display
- dataTDI[,1] <- NULL # removes empty column created when ouDF was created as start of function  
-    return(dataTDI) # pri
+ dataTDI[,1] <- NULL # removes empty column created when outDF was created as start of function (i.e. outDF <- 0)
+   dataTDI$SampleID <- floor(as.numeric(dataTDI$SampleID))
+ return(dataTDI) # 
   
 }
 
