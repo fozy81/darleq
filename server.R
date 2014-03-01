@@ -1,5 +1,5 @@
 require(shiny)
-require(lubridate)
+
 shinyServer(function(input, output) {
   output$contents <- renderTable({
     
