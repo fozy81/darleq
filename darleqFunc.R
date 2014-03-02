@@ -1,11 +1,14 @@
-### function requires columns containing: #Data #Code #sampleID #siteID #Abundance #Taxa #Alk
+### Based on WFD method statement  
+### This function requires input data.frame with columns containing: #Data #Code #sampleID #siteID #Abundance #Taxa #Alk
+### This function should work with S plus or R languages
 
-darleqFunc <- function(diatomTDI){  
+darleqFunc <- function(diatomTDI){  # create function called darleqFunc
 
+  lengthTDI <- length(diatomTDI)
   taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  # get DARLEQ taxa list and scores
   diatomTDI <- merge(diatomTDI,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
   
-  ## format data:
+  ## format data & create reference values:
   
   diatomTDI$Alk[diatomTDI$Alk > 250] <- 250  # Alkalinity capped at 250 according to method statement?
   diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value (abundance * TDI3 score)
@@ -61,7 +64,8 @@ darleqFunc <- function(diatomTDI){
     outDF$SampleID <- unique(TDI$SampleID)
       
     ### Loch LTDI2 scores:
-    
+   
+    outDF$totalabundsum <- sum(TDI$Abundance,na.rm=TRUE)
     outDF$sumLTDI2 <- sum(TDI$Abundance[TDI$LTDI2 > 0],na.rm=TRUE) #  should this exclude zero scoring taxa? -
     outDF$LTDI4SumAbund <- sum(TDI$scoreL4,na.rm=TRUE) # sum of 
     outDF$w <- outDF$LTDI4SumAbund / outDF$sumLTDI2
@@ -71,13 +75,18 @@ darleqFunc <- function(diatomTDI){
     
     ### Loch LTDI1 scores:
     
-    outDF$totalabundsum <- sum(TDI$Abundance,na.rm=TRUE)
     outDF$sumLTDI1 <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # should this exclude zero scoring taxa? -
     outDF$LTDI3SumAbund <- sum(TDI$scoreL3,na.rm=TRUE) # issue with duplicate taxa in NEMS
     outDF$w2 <- outDF$LTDI3SumAbund / outDF$sumLTDI1
     outDF$lochTDI3 <- (outDF$w2 * 25) - 25
     outDF$'EQR LTDI1' <- (100 - (outDF$lochTDI3)) / (100 - (unique(TDI$LochRefValue)))
-       
+     
+    lengthTDI <- length(TDI) # how many columns in input data
+    if (lengthTDI > 7){      # does input data include extra column for waterbodyID
+      outDF$WaterbodyID <- unique(TDI$WaterbodyID)  # add waterbodyID to output data
+    }
+   
+      
    return(outDF) ##runs output and stores under function name i.e. creates 'splitTDI2' as a list
     
   })
@@ -85,6 +94,18 @@ darleqFunc <- function(diatomTDI){
   dataTDI <- data.frame(do.call("rbind",dataTDI), check.names=F) # combines lits into dataframe using useful column names we have created
   row.names(dataTDI) <- NULL  # remove row names not required for display
  dataTDI[,1] <- NULL # removes empty column created when outDF was created as start of function (i.e. outDF <- 0)
+ 
+# if (lengthTDI > 7){   # check if waterbodyID in data.frame
+ #  wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
+  #   Eqr <- 0
+   #  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2'))
+    # Eqr$Waterbody <- unique(EQR$WaterbodyID)
+     #return(Eqr)  }) 
+#  }
+# wbEQR <- data.frame(do.call("rbind",wbEQR), check.names=F) 
+ #save(wbEQR,file = "wbEQR.RData")
+# dataTDI$wbEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)] <- wbEQR$WBEQR[as.numeric(wbEQR$Waterbody) == as.numeric(dataTDI$WaterbodyID)]
+ 
  return(dataTDI) # 
   
 }
