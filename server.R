@@ -17,7 +17,7 @@ shinyServer(function(input, output) {
     dataTDI <- darleqFunc(testdata)
     dataTDI$SampleID <- as.character(floor(as.numeric(dataTDI$SampleID))) # round sampleID
     lake <- input$lake
-    if (input$lake == TRUE & input$river == FALSE)
+    if (input$lake == TRUE & input$river == FALSE) # return different bits of table depending on river or lake
       return(dataTDI[,22:36])
     if (input$river == TRUE & input$lake == FALSE)
       return(dataTDI[,1:24])

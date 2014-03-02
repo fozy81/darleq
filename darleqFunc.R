@@ -98,16 +98,16 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
  if (lengthTDI > 7){   # check if waterbodyID in data.frame
 wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
  Eqr <- 0
-  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2'))
+  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
   Eqr$Waterbody <- unique(EQR$WaterbodyID)
  return(Eqr)  }) 
 
-wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F))#  wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
-#dataTDI$wbEQR <- wbEQR$WBEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)]
-dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) 
+wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) create data.frame of wb eqr
+#dataTDI$wbEQR[] <- wbEQR$WBEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)] - not working but easier way to merge?
+dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) # merge wb eqr with existing output data.frame
 
  }
-save(dataTDI, file="dataTDI.RData")
- return(dataTDI) # 
+
+ return(dataTDI) 
   
 }
