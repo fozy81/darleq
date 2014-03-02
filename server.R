@@ -1,5 +1,4 @@
 require(shiny)
-
 shinyServer(function(input, output) {
   output$contents <- renderTable({
     
@@ -13,8 +12,15 @@ shinyServer(function(input, output) {
     if (is.null(inFile))
       return(NULL)
     
-    testdata <-read.csv(inFile$datapath, header=input$header, sep=input$sep, quote=input$quote)
+    testdata <-read.csv(inFile$datapath)
     source("darleqFunc.R")
-    dataFunc <- darleqFunc(testdata)
+    dataTDI <- darleqFunc(testdata)
+    dataTDI$SampleID <- as.character(floor(as.numeric(dataTDI$SampleID))) # round sampleID
+    lake <- input$lake
+    if (input$lake == TRUE & input$river == FALSE)
+      return(dataTDI[,22:36])
+    if (input$river == TRUE & input$lake == FALSE)
+      return(dataTDI[,1:24])
+    dataTDI
   })
 })

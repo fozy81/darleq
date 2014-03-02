@@ -1,12 +1,11 @@
 ### function requires columns containing: #Data #Code #sampleID #siteID #Abundance #Taxa #Alk
 
-darleqFunc <- function(diatomTDI){
-  
+darleqFunc <- function(diatomTDI){  
 
   taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  # get DARLEQ taxa list and scores
-  diatomTDI <- merge(diatomTDI2,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
+  diatomTDI <- merge(diatomTDI,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
   
-  ## format data and :
+  ## format data:
   
   diatomTDI$Alk[diatomTDI$Alk > 250] <- 250  # Alkalinity capped at 250 according to method statement?
   diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value (abundance * TDI3 score)
@@ -14,6 +13,7 @@ darleqFunc <- function(diatomTDI){
   diatomTDI$scoreL4 <- diatomTDI$LTDI2 * diatomTDI$Abundance # create scores for LTDI2 'as' value
   diatomTDI$scoreL3 <- diatomTDI$LTDI1 * diatomTDI$Abundance # create scores for LTDI2 'as' value + for NEMS TDi3 use $LTDLR for mastertaxonlist use $LTDI1
   diatomTDI$Date <- as.Date(diatomTDI$Date, "%d-%b-%Y")
+  diatomTDI$Date <- as.character(diatomTDI$Date)
   diatomTDI$month <- as.numeric(substring(diatomTDI$Date, 6,7)) ### Dares season for TDI3 calculation creates months
   diatomTDI$DaresSeason[diatomTDI$month >= 7] = 1 # create DARES season (is sample in first or second half of year?)
   diatomTDI$DaresSeason[diatomTDI$month <= 6] = 0
@@ -57,7 +57,7 @@ darleqFunc <- function(diatomTDI){
     outDF$EQR <- (100-outDF$TDI4)/(100-outDF$eTDI)
     outDF$tdi3EQR <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
     outDF$SiteID <- unique(TDI$SiteID)
-    outDF$date <- unique(TDI$Date)
+    outDF$Date <- as.character(unique(TDI$Date))
     outDF$SampleID <- unique(TDI$SampleID)
       
     ### Loch LTDI2 scores:
@@ -82,11 +82,9 @@ darleqFunc <- function(diatomTDI){
     
   })
   
-  dataTDI <- data.frame(do.call("rbind",dataTDI)) # combines lits into dataframe using useful column names we have created
+  dataTDI <- data.frame(do.call("rbind",dataTDI), check.names=F) # combines lits into dataframe using useful column names we have created
   row.names(dataTDI) <- NULL  # remove row names not required for display
  dataTDI[,1] <- NULL # removes empty column created when outDF was created as start of function (i.e. outDF <- 0)
-   dataTDI$SampleID <- floor(as.numeric(dataTDI$SampleID))
  return(dataTDI) # 
   
 }
-
