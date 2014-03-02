@@ -102,7 +102,7 @@ wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by w
   Eqr$'WB EQR LTDI2'  <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
  Eqr$'WB EQR LTDI1'  <- mean(as.numeric(EQR$'EQR LTDI1')) 
  Eqr$Waterbody <- unique(EQR$WaterbodyID)
- Eqr$numberOfSamplesPerWaterBody <- length(unique(EQR$SampleID))
+ Eqr$numberOfSamplesInWaterBody <- length(unique(EQR$SampleID))
  return(Eqr)  }) 
 
 wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) #create data.frame of wb eqr
