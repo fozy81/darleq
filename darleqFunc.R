@@ -1,5 +1,5 @@
 ### Based on WFD method statement  
-### This function requires input data.frame with columns containing: #Data #Code #sampleID #siteID #Abundance #Taxa #Alk
+### This function requires input data.frame with columns containing: #Date #Code #sampleID #siteID #Abundance #Taxa #Alk
 ### This function should work with S plus or R languages
 
 darleqFunc <- function(diatomTDI){  # create function called darleqFunc
@@ -91,21 +91,23 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     
   })
   
-  dataTDI <- data.frame(do.call("rbind",dataTDI), check.names=F) # combines lits into dataframe using useful column names we have created
+ dataTDI <- do.call(rbind, lapply(dataTDI, data.frame, stringsAsFactors=FALSE,check.names=F))
   row.names(dataTDI) <- NULL  # remove row names not required for display
  dataTDI[,1] <- NULL # removes empty column created when outDF was created as start of function (i.e. outDF <- 0)
  
-# if (lengthTDI > 7){   # check if waterbodyID in data.frame
- #  wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
-  #   Eqr <- 0
-   #  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2'))
-    # Eqr$Waterbody <- unique(EQR$WaterbodyID)
-     #return(Eqr)  }) 
-#  }
-# wbEQR <- data.frame(do.call("rbind",wbEQR), check.names=F) 
- #save(wbEQR,file = "wbEQR.RData")
-# dataTDI$wbEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)] <- wbEQR$WBEQR[as.numeric(wbEQR$Waterbody) == as.numeric(dataTDI$WaterbodyID)]
- 
+ if (lengthTDI > 7){   # check if waterbodyID in data.frame
+wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
+ Eqr <- 0
+  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2'))
+  Eqr$Waterbody <- unique(EQR$WaterbodyID)
+ return(Eqr)  }) 
+
+wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F))#  wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
+#dataTDI$wbEQR <- wbEQR$WBEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)]
+dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) 
+
+ }
+save(dataTDI, file="dataTDI.RData")
  return(dataTDI) # 
   
 }
