@@ -101,12 +101,14 @@ wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by w
  Eqr <- 0
   Eqr$'WB EQR LTDI2'  <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
  Eqr$'WB EQR LTDI1'  <- mean(as.numeric(EQR$'EQR LTDI1')) 
+ Eqr$'WB EQR TDI3' <- mean(as.numeric(EQR$'TDI3 EQR')) 
+ Eqr$'WB EQR TDI4' <- mean(as.numeric(EQR$'TDI4 EQR')) 
  Eqr$Waterbody <- unique(EQR$WaterbodyID)
  Eqr$numberOfSamplesInWaterBody <- length(unique(EQR$SampleID))
  return(Eqr)  }) 
 
 wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) #create data.frame of wb eqr
-#dataTDI$wbEQR[] <- wbEQR$WBEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)] - not working but easier way to merge?
+wbEQR[,1] <- NULL  # removes empty column created when outDF was created as start of function (i.e. Eqr <- 0)
 dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) # merge wb eqr with existing output data.frame
 
  }
