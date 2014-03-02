@@ -58,8 +58,8 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF$TDI3 <- ((outDF$as3 / outDF$tdi3SumAbund)*25) - 25
     outDF$eTDI <-  9.933*exp(log10(unique(TDI$Alk))*0.81)
     outDF$eTDI3 <- -25.36+(56.83*(log10(unique(TDI$Alk))))-(12.96*(log10(unique(TDI$Alk))*log10(unique(TDI$Alk))))+(3.21*(unique(TDI$DaresSeason)))
-    outDF$EQR <- (100-outDF$TDI4)/(100-outDF$eTDI)
-    outDF$tdi3EQR <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
+    outDF$'TDI4 EQR' <- (100-outDF$TDI4)/(100-outDF$eTDI)
+    outDF$'TDI3 EQR' <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
     
     ### Date, Site, Sample
     
