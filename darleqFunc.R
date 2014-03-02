@@ -1,6 +1,7 @@
 ### Based on WFD method statement  
 ### This function requires input data.frame with columns containing: #Date #Code #sampleID #siteID #Abundance #Taxa #Alk
-### This function should work with S plus or R languages
+### Optional #WaterbodyID column will create mean eqr for waterbodyID
+### This function should work with S plus or R languages 
 
 darleqFunc <- function(diatomTDI){  # create function called darleqFunc
 
@@ -30,7 +31,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     
     outDF <- 0 # creates new output data.frame for data to be put into
     
-    ## Abundances & Sums (ignores any 'NAs' missing data i.e. na.rm=TRUE):
+    ## TDI Abundances & Sums (ignores any 'NAs' missing data i.e. na.rm=TRUE):
   
     outDF$sumAbund <- sum(TDI$Abundance[TDI$Planktic != TRUE],na.rm=TRUE) # sum abundance but exclude planktonic
     outDF$tdi3SumAbund <- sum(TDI$Abundance[TDI$TDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
@@ -59,6 +60,9 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF$eTDI3 <- -25.36+(56.83*(log10(unique(TDI$Alk))))-(12.96*(log10(unique(TDI$Alk))*log10(unique(TDI$Alk))))+(3.21*(unique(TDI$DaresSeason)))
     outDF$EQR <- (100-outDF$TDI4)/(100-outDF$eTDI)
     outDF$tdi3EQR <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
+    
+    ### Date, Site, Sample
+    
     outDF$SiteID <- unique(TDI$SiteID)
     outDF$Date <- as.character(unique(TDI$Date))
     outDF$SampleID <- unique(TDI$SampleID)
@@ -83,12 +87,9 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
      
     lengthTDI <- length(TDI) # how many columns in input data
     if (lengthTDI > 7){      # does input data include extra column for waterbodyID
-      outDF$WaterbodyID <- unique(TDI$WaterbodyID)  # add waterbodyID to output data
+      outDF$WaterbodyID <- unique(TDI$WaterbodyID)  # add optional waterbodyID to output data
     }
-   
-      
-   return(outDF) ##runs output and stores under function name i.e. creates 'splitTDI2' as a list
-    
+     return(outDF) ##runs output and stores under function name i.e. creates 'splitTDI2' as a list
   })
   
  dataTDI <- do.call(rbind, lapply(dataTDI, data.frame, stringsAsFactors=FALSE,check.names=F))
@@ -98,16 +99,14 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
  if (lengthTDI > 7){   # check if waterbodyID in data.frame
 wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
  Eqr <- 0
-  Eqr$WBEQR <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
+  Eqr$'WB EQR LTDI2'  <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
   Eqr$Waterbody <- unique(EQR$WaterbodyID)
  return(Eqr)  }) 
 
-wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) create data.frame of wb eqr
+wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) #create data.frame of wb eqr
 #dataTDI$wbEQR[] <- wbEQR$WBEQR[as.numeric(dataTDI$WaterbodyID) == as.numeric(wbEQR$Waterbody)] - not working but easier way to merge?
 dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) # merge wb eqr with existing output data.frame
 
  }
-
  return(dataTDI) 
-  
 }

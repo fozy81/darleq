@@ -23,5 +23,4 @@ shinyServer(function(input, output) {
       return(dataTDI[,1:24])
     dataTDI
   })
-  
 })
