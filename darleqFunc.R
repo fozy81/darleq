@@ -14,18 +14,18 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   diatomTDI$Alk[diatomTDI$Alk > 250] <- 250  # Alkalinity capped at 250 according to method statement?
   diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value (abundance * TDI3 score)
   diatomTDI$score3 <- diatomTDI$TDI3 * diatomTDI$Abundance # create scores for TDI3 'as' value  (abundance * TDI4 score)
-  diatomTDI$scoreL4 <- diatomTDI$LTDI2 * diatomTDI$Abundance # create scores for LTDI2 'as' value
-  diatomTDI$scoreL3 <- diatomTDI$LTDI1 * diatomTDI$Abundance # create scores for LTDI2 'as' value + for NEMS TDi3 use $LTDLR for mastertaxonlist use $LTDI1
+  diatomTDI$scoreL3 <- diatomTDI$LTDI3 * diatomTDI$Abundance # create scores for LTDI3 'as' value
+  diatomTDI$scoreL1 <- diatomTDI$LTDI1 * diatomTDI$Abundance # create scores for LTDI1 'as' value + for NEMS TDi3 use $LTDLR for mastertaxonlist use $LTDI1
   diatomTDI$Date <- as.Date(diatomTDI$Date, "%d-%b-%Y")
   diatomTDI$Date <- as.character(diatomTDI$Date)
   diatomTDI$month <- as.numeric(substring(diatomTDI$Date, 6,7)) ### Dares season for TDI3 calculation creates months
   diatomTDI$DaresSeason[diatomTDI$month >= 7] = 1 # create DARES season (is sample in first or second half of year?)
   diatomTDI$DaresSeason[diatomTDI$month <= 6] = 0
-  diatomTDI$LochRefValue[diatomTDI$Alk < 10] = 20 ## Create LTDI reference/expected diatom index value based on two Alkalinity bands
-  diatomTDI$LochRefValue[diatomTDI$Alk >= 10] = 25
-  diatomTDI$eLTDI2 <- ifelse(diatomTDI$Alk >= 10 & diatomTDI$Alk <= 50,35, diatomTDI$Alk)
-  diatomTDI$eLTDI2[diatomTDI$Alk < 10] = 22 ## Create LTDI2 reference/expected diatom index value based on three Alkalinity bands
-  diatomTDI$eLTDI2[diatomTDI$Alk > 50] = 42
+  diatomTDI$eLTDI1[diatomTDI$Alk < 10] = 20 ## Create LTDI reference/expected diatom index value based on two Alkalinity bands
+  diatomTDI$eLTDI1[diatomTDI$Alk >= 10] = 25
+  diatomTDI$eLTDI3 <- ifelse(diatomTDI$Alk >= 10 & diatomTDI$Alk <= 50,35, diatomTDI$Alk)
+  diatomTDI$eLTDI3[diatomTDI$Alk < 10] = 22 ## Create LTDI3 reference/expected diatom index value based on three Alkalinity bands
+  diatomTDI$eLTDI3[diatomTDI$Alk > 50] = 42
   
   dataTDI <- lapply(split(diatomTDI, diatomTDI$SampleID), function(TDI){ #creates a new function which applies a series of commands on the split data by sample ID  
     
@@ -67,23 +67,23 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF$Date <- as.character(unique(TDI$Date))
     outDF$SampleID <- unique(TDI$SampleID)
       
-    ### Loch LTDI2 scores:
+    ### Loch LTDI3 scores:
    
     outDF$totalabundsum <- sum(TDI$Abundance,na.rm=TRUE)
-    outDF$sumLTDI2 <- sum(TDI$Abundance[TDI$LTDI2 > 0],na.rm=TRUE) #  should this exclude zero scoring taxa? -
-    outDF$LTDI4SumAbund <- sum(TDI$scoreL4,na.rm=TRUE) # sum of 
-    outDF$w <- outDF$LTDI4SumAbund / outDF$sumLTDI2
-    outDF$LTDI2 <- (outDF$w * 25) - 25
-    outDF$'EQR LTDI2' <- (100 - (outDF$LTDI2)) / (100 - (unique(TDI$eLTDI2)))
-    outDF$eLTDI2 <- unique(TDI$eLTDI2)
+    outDF$sumLTDI3 <- sum(TDI$Abundance[TDI$LTDI3 > 0],na.rm=TRUE) #  should this exclude zero scoring taxa? -
+    outDF$LTDI3SumAbund <- sum(TDI$scoreL3,na.rm=TRUE) # sum of 
+    outDF$w <- outDF$LTDI3SumAbund / outDF$sumLTDI3
+    outDF$LTDI3 <- (outDF$w * 25) - 25
+    outDF$'EQR LTDI3' <- (100 - (outDF$LTDI3)) / (100 - (unique(TDI$eLTDI3)))
+    outDF$eLTDI3 <- unique(TDI$eLTDI3)
     
     ### Loch LTDI1 scores:
     
     outDF$sumLTDI1 <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # should this exclude zero scoring taxa? -
-    outDF$LTDI3SumAbund <- sum(TDI$scoreL3,na.rm=TRUE) # issue with duplicate taxa in NEMS
-    outDF$w2 <- outDF$LTDI3SumAbund / outDF$sumLTDI1
-    outDF$lochTDI3 <- (outDF$w2 * 25) - 25
-    outDF$'EQR LTDI1' <- (100 - (outDF$lochTDI3)) / (100 - (unique(TDI$LochRefValue)))
+    outDF$LTDI1SumAbund <- sum(TDI$scoreL1,na.rm=TRUE) # issue with duplicate taxa in NEMS
+    outDF$w2 <- outDF$LTDI1SumAbund / outDF$sumLTDI1
+    outDF$LTDI1 <- (outDF$w2 * 25) - 25
+    outDF$'EQR LTDI1' <- (100 - (outDF$LTDI1)) / (100 - (unique(TDI$eLTDI1)))
      
     lengthTDI <- length(TDI) # how many columns in input data
     if (lengthTDI > 7){      # does input data include extra column for waterbodyID
@@ -99,7 +99,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
  if (lengthTDI > 7){   # check if waterbodyID in data.frame
 wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
  Eqr <- 0
-  Eqr$'WB EQR LTDI2'  <- mean(as.numeric(EQR$'EQR LTDI2')) # create mean waterbody EQR
+  Eqr$'WB EQR LTDI3'  <- mean(as.numeric(EQR$'EQR LTDI3')) # create mean waterbody EQR
  Eqr$'WB EQR LTDI1'  <- mean(as.numeric(EQR$'EQR LTDI1')) 
  Eqr$'WB EQR TDI3' <- mean(as.numeric(EQR$'TDI3 EQR')) 
  Eqr$'WB EQR TDI4' <- mean(as.numeric(EQR$'TDI4 EQR')) 
