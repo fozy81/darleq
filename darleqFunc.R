@@ -1,7 +1,11 @@
-### Based on WFD method statement  
-### This function requires input data.frame with columns containing: #Date #Code #sampleID #siteID #Abundance #Taxa #Alk
-### Optional #WaterbodyID column will create mean eqr for waterbodyID
-### This function should work with S plus or R languages 
+### README
+# Based on standalone desktop tool: http://www.staff.ncl.ac.uk/staff/stephen.juggins/DARLEQII.htm 
+# + WFD Method statements for Rivers and Lake Phytobenthos
+# WFD UKTAG document: http://www.wfduk.org/sites/default/files/Media/Environmental%20standards/Annex%202%20Rivers%20Macrophytes%20%26%20Phytobenthos%20DARLEQ.pdf
+# WFD UKTAG document: http://www.wfduk.org/sites/default/files/Media/Environmental%20standards/Annex%2010%20Lakes%20Macrophytes%20and%20Phytobenthos%20DARLEQ.pdf
+# This function requires input data.frame with columns containing: #Date #Code #SampleID #siteID #Abundance #Taxa #Alk
+# Optional #WaterbodyID column will create mean eqr for waterbodyID
+# This function should work with S plus but will require some changes for importing csv and Time/Date function
 
 darleqFunc <- function(diatomTDI){  # create function called darleqFunc
 
@@ -32,84 +36,97 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF <- 0 # creates new output data.frame for data to be put into
     
     ## TDI Abundances & Sums (ignores any 'NAs' missing data i.e. na.rm=TRUE):
-  
-    outDF$sumAbund <- sum(TDI$Abundance[TDI$Planktic != TRUE],na.rm=TRUE) # sum abundance but exclude planktonic
-    outDF$tdi3SumAbund <- sum(TDI$Abundance[TDI$TDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
-    outDF$tdi4SumAbund <- sum(TDI$Abundance[TDI$TDI4 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
-    outDF$allTaxaAbund <- nrow(TDI) # count all taxa (the number of rows i.e. should be a row per taxa)
-    outDF$allTaxaAbund3 <- sum(TDI$Abundance[TDI$TDI3 >= 0],na.rm=TRUE) # count all taxa abundance checking TDI.x field is not null/na 
-    outDF$allTaxaAbund4 <-  sum(TDI$Abundance[TDI$TDI4 >= 0],na.rm=TRUE) # count all taxa abundance checking TDI.x field is not null/na 
-    outDF$notPlankticAbund <- sum(TDI$Abundance[TDI$Planktic == FALSE],na.rm=TRUE) # count non-planktonic taxa to fit with NEMS field: 'Abundance of non-planktonic taxa'
-    
-    #### percentages TDI4:
-    
-    outDF$plankticAbund <- sum(TDI$Abundance[TDI$Planktic == TRUE],na.rm=TRUE) # count planktonic taxa
-    outDF$plankticPercent <- (outDF$plankticAbund / outDF$allTaxaAbund4) * 100 # percentage planktonic using TDI4
-    outDF$motileAbund <- sum(TDI$Abundance[TDI$Motile == TRUE],na.rm=TRUE) # sum abundance of motile taxa
-    outDF$motilePercent <- (outDF$motileAbund / outDF$allTaxaAbund4) * 100 # percentage motile using TDI4
-    outDF$organicAbund <- sum(TDI$Abundance[TDI$OrganicTolerant == TRUE],na.rm=TRUE)  # sum abundance of organic taxa
-    outDF$organicPercent <- (outDF$organicAbund / outDF$allTaxaAbund4) * 100 # percentage organic using TDI4
-    
-    #### TDI3 & TDI4 & eTDI4 & eTDI3 scores:
-    
-    outDF$as <- sum(TDI$score,na.rm=TRUE)
-    outDF$as3 <- sum(TDI$score3,na.rm=TRUE)
-    outDF$TDI4 <- ((outDF$as / outDF$tdi4SumAbund)*25) - 25 
-    outDF$TDI3 <- ((outDF$as3 / outDF$tdi3SumAbund)*25) - 25
-    outDF$eTDI <-  9.933*exp(log10(unique(TDI$Alk))*0.81)
-    outDF$eTDI3 <- -25.36+(56.83*(log10(unique(TDI$Alk))))-(12.96*(log10(unique(TDI$Alk))*log10(unique(TDI$Alk))))+(3.21*(unique(TDI$DaresSeason)))
-    outDF$'TDI4 EQR' <- (100-outDF$TDI4)/(100-outDF$eTDI)
-    outDF$'TDI3 EQR' <-  (100-outDF$TDI3)/(100-outDF$eTDI3)
-    
-    ### Date, Site, Sample
-    
-    outDF$SiteID <- unique(TDI$SiteID)
-    outDF$Date <- as.character(unique(TDI$Date))
-    outDF$SampleID <- unique(TDI$SampleID)
-      
-    ### Loch LTDI3 scores:
-   
-    outDF$totalabundsum <- sum(TDI$Abundance,na.rm=TRUE)
-    outDF$sumLTDI3 <- sum(TDI$Abundance[TDI$LTDI3 > 0],na.rm=TRUE) #  should this exclude zero scoring taxa? -
-    outDF$LTDI3SumAbund <- sum(TDI$scoreL3,na.rm=TRUE) # sum of 
-    outDF$w <- outDF$LTDI3SumAbund / outDF$sumLTDI3
-    outDF$LTDI3 <- (outDF$w * 25) - 25
-    outDF$'EQR LTDI3' <- (100 - (outDF$LTDI3)) / (100 - (unique(TDI$eLTDI3)))
-    outDF$eLTDI3 <- unique(TDI$eLTDI3)
-    
-    ### Loch LTDI1 scores:
-    
-    outDF$sumLTDI1 <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # should this exclude zero scoring taxa? -
-    outDF$LTDI1SumAbund <- sum(TDI$scoreL1,na.rm=TRUE) # issue with duplicate taxa in NEMS
-    outDF$w2 <- outDF$LTDI1SumAbund / outDF$sumLTDI1
-    outDF$LTDI1 <- (outDF$w2 * 25) - 25
-    outDF$'EQR LTDI1' <- (100 - (outDF$LTDI1)) / (100 - (unique(TDI$eLTDI1)))
      
-    lengthTDI <- length(TDI) # how many columns in input data
-    if (lengthTDI > 7){      # does input data include extra column for waterbodyID
-      outDF$WaterbodyID <- unique(TDI$WaterbodyID)  # add optional waterbodyID to output data
+    outDF$'RIVER TDI3 SumAbund' <- sum(TDI$Abundance[TDI$TDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
+    outDF$'RIVER TDI4 SumAbund' <- sum(TDI$Abundance[TDI$TDI4 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
+    outDF$'LAKE LTDI1 SumAbund' <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
+    outDF$'LAKE LTDI3 SumAbund' <- sum(TDI$Abundance[TDI$LTDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
+
+    #### Plantic/Organic/Motile percentages:
+    
+  outDF$'SAMPLE plankticAbund' <- sum(TDI$Abundance[TDI$Planktic == TRUE],na.rm=TRUE) # count planktonic taxa
+  outDF$'SAMPLE motileAbund' <- sum(TDI$Abundance[TDI$Motile == TRUE],na.rm=TRUE) # sum abundance of motile taxa
+  outDF$'SAMPLE organicAbund' <- sum(TDI$Abundance[TDI$OrganicTolerant == TRUE],na.rm=TRUE)  # sum abundance of organic taxa
+ 
+  outDF$'RIVER plankticPercent TDI4' <- (outDF$'SAMPLE plankticAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage planktonic using TDI4  
+  outDF$'RIVER motilePercent TDI4' <- (outDF$'SAMPLE motileAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage motile using TDI4
+  outDF$'RIVER organicPercent TDI4' <- (outDF$'SAMPLE organicAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage organic using TDI4
+ 
+  outDF$'RIVER plankticPercent TDI3' <- (outDF$'SAMPLE plankticAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage planktonic using TDI4  
+  outDF$'RIVER motilePercent TDI3' <- (outDF$'SAMPLE motileAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage motile using TDI4
+  outDF$'RIVER organicPercent TDI3' <- (outDF$'SAMPLE organicAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage organic using TDI4
+
+  outDF$'LAKE plankticPercent LTDI3' <- (outDF$'SAMPLE plankticAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage planktonic using TDI4  
+  outDF$'LAKE motilePercent LTDI3' <- (outDF$'SAMPLE motileAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage motile using TDI4
+  outDF$'LAKE organicPercent LTDI3' <- (outDF$'SAMPLE organicAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage organic using TDI4
+  
+  outDF$'LAKE plankticPercent LTDI1' <- (outDF$'SAMPLE plankticAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage planktonic using TDI4  
+  outDF$'LAKE motilePercent LTDI1' <- (outDF$'SAMPLE motileAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage motile using TDI4
+  outDF$'LAKE organicPercent LTDI1' <- (outDF$'SAMPLE organicAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage organic using TDI4
+   
+  #### TDI3 & TDI4 & eTDI4 & eTDI3 scores:
+    
+  outDF$'RIVER as TDI4' <- sum(TDI$score,na.rm=TRUE)
+  outDF$'RIVER as3 TDI3' <- sum(TDI$score3,na.rm=TRUE)
+  outDF$'RIVER TDI4' <- ((outDF$'RIVER as TDI4' / outDF$'RIVER TDI4 SumAbund')*25) - 25 
+  outDF$'RIVER TDI3' <- ((outDF$'RIVER as3 TDI3' / outDF$'RIVER TDI3 SumAbund')*25) - 25
+  outDF$'RIVER eTDI4' <-  9.933*exp(log10(unique(TDI$Alk))*0.81)
+  outDF$'RIVER eTDI3' <- -25.36+(56.83*(log10(unique(TDI$Alk))))-(12.96*(log10(unique(TDI$Alk))*log10(unique(TDI$Alk))))+(3.21*(unique(TDI$DaresSeason)))
+  outDF$'RIVER TDI4 EQR' <- (100-outDF$'RIVER TDI4')/(100-outDF$'RIVER eTDI4')
+  outDF$'RIVER TDI3 EQR' <-  (100-outDF$'RIVER TDI3')/(100-outDF$'RIVER eTDI3')
+    
+  ### Date, Site, Sample
+    
+  outDF$'SAMPLE SiteID' <- unique(TDI$SiteID)
+  outDF$'SAMPLE Date' <- as.character(unique(TDI$Date))
+  outDF$'SAMPLE ID' <- unique(TDI$SampleID)
+        
+  ### LAKE LTDI3 scores:
+   
+  outDF$'LAKE totalabundsum' <- sum(TDI$Abundance,na.rm=TRUE)
+  outDF$'LAKE LTDI3 SumScore' <- sum(TDI$scoreL3,na.rm=TRUE) # sum of 
+  outDF$'LAKE w' <- outDF$'LAKE LTDI3 SumScore' / outDF$'LAKE LTDI3 SumAbund'
+  outDF$'LAKE LTDI3' <- (outDF$'LAKE w'  * 25) - 25
+  outDF$'LAKE EQR LTDI3' <- (100 - (outDF$'LAKE LTDI3')) / (100 - (unique(TDI$eLTDI3)))
+  outDF$'LAKE eLTDI3' <- unique(TDI$eLTDI3)
+    
+  ### LAKE LTDI1 scores:
+    
+  outDF$'LAKE LTDI1 SumScore' <- sum(TDI$scoreL1,na.rm=TRUE) # issue with duplicate taxa in NEMS
+  outDF$'LAKE w2' <- outDF$'LAKE LTDI1 SumScore' / outDF$'LAKE LTDI1 SumAbund'
+  outDF$'LAKE LTDI1' <- (outDF$'LAKE w2' * 25) - 25
+  outDF$'LAKE EQR LTDI1' <- (100 - (outDF$'LAKE LTDI1')) / (100 - (unique(TDI$eLTDI1)))
+     
+ lengthTDI <- length(TDI) # how many columns in input data
+   if (lengthTDI > 7){      # does input data include extra column for waterbodyID
+   outDF$'SAMPLE WaterbodyID' <- unique(TDI$WaterbodyID)  # add optional waterbodyID to output data
     }
      return(outDF) ##runs output and stores under function name i.e. creates 'splitTDI2' as a list
-  })
+   })
   
  dataTDI <- do.call(rbind, lapply(dataTDI, data.frame, stringsAsFactors=FALSE,check.names=F))
-  row.names(dataTDI) <- NULL  # remove row names not required for display
+ 
  dataTDI[,1] <- NULL # removes empty column created when outDF was created as start of function (i.e. outDF <- 0)
  
  if (lengthTDI > 7){   # check if waterbodyID in data.frame
-wbEQR <- lapply(split(dataTDI, dataTDI$WaterbodyID), function(EQR){ # split by waterbody
+wbEQR <- lapply(split(dataTDI, dataTDI$'SAMPLE WaterbodyID'), function(EQR){ # split by waterbody
  Eqr <- 0
-  Eqr$'WB EQR LTDI3'  <- mean(as.numeric(EQR$'EQR LTDI3')) # create mean waterbody EQR
- Eqr$'WB EQR LTDI1'  <- mean(as.numeric(EQR$'EQR LTDI1')) 
- Eqr$'WB EQR TDI3' <- mean(as.numeric(EQR$'TDI3 EQR')) 
- Eqr$'WB EQR TDI4' <- mean(as.numeric(EQR$'TDI4 EQR')) 
- Eqr$Waterbody <- unique(EQR$WaterbodyID)
- Eqr$numberOfSamplesInWaterBody <- length(unique(EQR$SampleID))
+ std <- function(x) sd(x)/sqrt(length(x)) # standard error function
+ Eqr$'LAKE WB STANDARD ERROR LTDI3' <- std(as.numeric(EQR$'LAKE EQR LTDI3')) # create SE for EQR
+ Eqr$'LAKE WB STANDARD ERROR LTDI1' <- std(as.numeric(EQR$'LAKE EQR LTDI1')) 
+ Eqr$'RIVER WB STANDARD ERROR TDI3' <- std(as.numeric(EQR$'RIVER TDI3 EQR')) 
+ Eqr$'RIVER WB STANDARD ERROR TDI4' <- std(as.numeric(EQR$'RIVER TDI4 EQR')) 
+ Eqr$'LAKE WB EQR LTDI3'  <- mean(as.numeric(EQR$'LAKE EQR LTDI3')) # create mean waterbody EQR
+ Eqr$'LAKE WB EQR LTDI1'  <- mean(as.numeric(EQR$'LAKE EQR LTDI1')) 
+ Eqr$'RIVER WB EQR TDI3' <- mean(as.numeric(EQR$'RIVER TDI3 EQR')) 
+ Eqr$'RIVER WB EQR TDI4' <- mean(as.numeric(EQR$'RIVER TDI4 EQR')) 
+ Eqr$Waterbody <- unique(EQR$'SAMPLE WaterbodyID')
+ Eqr$numberOfSamplesInWaterBody <- length(unique(EQR$'SAMPLE ID'))
  return(Eqr)  }) 
 
 wbEQR <- do.call(rbind, lapply(wbEQR, data.frame, stringsAsFactors=FALSE,check.names=F)) #create data.frame of wb eqr
 wbEQR[,1] <- NULL  # removes empty column created when outDF was created as start of function (i.e. Eqr <- 0)
-dataTDI <- merge(dataTDI,wbEQR,by.x="WaterbodyID",by.y="Waterbody",all.x=TRUE) # merge wb eqr with existing output data.frame
+dataTDI <- merge(dataTDI,wbEQR,by.x="SAMPLE WaterbodyID",by.y="Waterbody",all.x=TRUE) # merge wb eqr with existing output data.frame
 
  }
  return(dataTDI) 
