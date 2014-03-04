@@ -9,7 +9,7 @@
 
 darleqFunc <- function(diatomTDI){  # create function called darleqFunc
 
-  lengthTDI <- length(diatomTDI)
+  lengthTDI <- length(diatomTDI) # see if optional waterbody ID included
   taxaList <- read.csv("DARLEQ2_TAXON_LIST.csv")  # get DARLEQ taxa list and scores
   diatomTDI <- merge(diatomTDI,taxaList,by.x="Code", by.y="TaxonId") # merge scores with taxa uploaded/input
   
@@ -41,29 +41,18 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF$'RIVER TDI4 SumAbund' <- sum(TDI$Abundance[TDI$TDI4 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
     outDF$'LAKE LTDI1 SumAbund' <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
     outDF$'LAKE LTDI3 SumAbund' <- sum(TDI$Abundance[TDI$LTDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
-
+    outDF$'SAMPLE Total Abundance' <- sum(TDI$Abundance, na.rm=TRUE) # sum abundance - all taxa
+    
     #### Plantic/Organic/Motile percentages:
     
   outDF$'SAMPLE plankticAbund' <- sum(TDI$Abundance[TDI$Planktic == TRUE],na.rm=TRUE) # count planktonic taxa
   outDF$'SAMPLE motileAbund' <- sum(TDI$Abundance[TDI$Motile == TRUE],na.rm=TRUE) # sum abundance of motile taxa
   outDF$'SAMPLE organicAbund' <- sum(TDI$Abundance[TDI$OrganicTolerant == TRUE],na.rm=TRUE)  # sum abundance of organic taxa
  
-  outDF$'RIVER plankticPercent TDI4' <- (outDF$'SAMPLE plankticAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage planktonic using TDI4  
-  outDF$'RIVER motilePercent TDI4' <- (outDF$'SAMPLE motileAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage motile using TDI4
-  outDF$'RIVER organicPercent TDI4' <- (outDF$'SAMPLE organicAbund' / outDF$'RIVER TDI4 SumAbund') * 100 # percentage organic using TDI4
- 
-  outDF$'RIVER plankticPercent TDI3' <- (outDF$'SAMPLE plankticAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage planktonic using TDI4  
-  outDF$'RIVER motilePercent TDI3' <- (outDF$'SAMPLE motileAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage motile using TDI4
-  outDF$'RIVER organicPercent TDI3' <- (outDF$'SAMPLE organicAbund' / outDF$'RIVER TDI3 SumAbund') * 100 # percentage organic using TDI4
-
-  outDF$'LAKE plankticPercent LTDI3' <- (outDF$'SAMPLE plankticAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage planktonic using TDI4  
-  outDF$'LAKE motilePercent LTDI3' <- (outDF$'SAMPLE motileAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage motile using TDI4
-  outDF$'LAKE organicPercent LTDI3' <- (outDF$'SAMPLE organicAbund' / outDF$'LAKE LTDI3 SumAbund') * 100 # percentage organic using TDI4
+  outDF$'SAMPLE plankticPercent' <- (outDF$'SAMPLE plankticAbund' / outDF$'SAMPLE Total Abundance') * 100 # percentage planktonic 
+  outDF$'SAMPLE motilePercent' <- (outDF$'SAMPLE motileAbund' / outDF$'SAMPLE Total Abundance') * 100 # percentage motile 
+  outDF$'SAMPLE organicPercent' <- (outDF$'SAMPLE organicAbund' / outDF$'SAMPLE Total Abundance') * 100 # percentage organic 
   
-  outDF$'LAKE plankticPercent LTDI1' <- (outDF$'SAMPLE plankticAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage planktonic using TDI4  
-  outDF$'LAKE motilePercent LTDI1' <- (outDF$'SAMPLE motileAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage motile using TDI4
-  outDF$'LAKE organicPercent LTDI1' <- (outDF$'SAMPLE organicAbund' / outDF$'LAKE LTDI1 SumAbund') * 100 # percentage organic using TDI4
-   
   #### TDI3 & TDI4 & eTDI4 & eTDI3 scores:
     
   outDF$'RIVER as TDI4' <- sum(TDI$score,na.rm=TRUE)
