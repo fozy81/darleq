@@ -18,7 +18,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   diatomTDI$Alk[diatomTDI$Alk > 250] <- 250  # Alkalinity capped at 250 according to method statement?
   diatomTDI$score <- diatomTDI$TDI4 * diatomTDI$Abundance # create scores for TDI4 'as' value (abundance * TDI3 score)
   diatomTDI$score3 <- diatomTDI$TDI3 * diatomTDI$Abundance # create scores for TDI3 'as' value  (abundance * TDI4 score)
-  diatomTDI$scoreL3 <- diatomTDI$LTDI3 * diatomTDI$Abundance # create scores for LTDI3 'as' value
+  diatomTDI$scoreL3 <- diatomTDI$LTDI2 * diatomTDI$Abundance # create scores for LTDI2 'as' value
   diatomTDI$scoreL1 <- diatomTDI$LTDI1 * diatomTDI$Abundance # create scores for LTDI1 'as' value + for NEMS TDi3 use $LTDLR for mastertaxonlist use $LTDI1
   diatomTDI$Date <- as.Date(diatomTDI$Date, "%d-%b-%Y")
   diatomTDI$Date <- as.character(diatomTDI$Date)
@@ -27,9 +27,9 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   diatomTDI$DaresSeason[diatomTDI$month <= 6] = 0
   diatomTDI$eLTDI1[diatomTDI$Alk < 10] = 20 ## Create LTDI reference/expected diatom index value based on two Alkalinity bands
   diatomTDI$eLTDI1[diatomTDI$Alk >= 10] = 25
-  diatomTDI$eLTDI3 <- ifelse(diatomTDI$Alk >= 10 & diatomTDI$Alk <= 50,35, diatomTDI$Alk)
-  diatomTDI$eLTDI3[diatomTDI$Alk < 10] = 22 ## Create LTDI3 reference/expected diatom index value based on three Alkalinity bands
-  diatomTDI$eLTDI3[diatomTDI$Alk > 50] = 42
+  diatomTDI$eLTDI2 <- ifelse(diatomTDI$Alk >= 10 & diatomTDI$Alk <= 50,35, diatomTDI$Alk)
+  diatomTDI$eLTDI2[diatomTDI$Alk < 10] = 22 ## Create LTDI2 reference/expected diatom index value based on three Alkalinity bands
+  diatomTDI$eLTDI2[diatomTDI$Alk > 50] = 42
   
   dataTDI <- lapply(split(diatomTDI, diatomTDI$SampleID), function(TDI){ #creates a new function which applies a series of commands on the split data by sample ID  
     
@@ -40,7 +40,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
     outDF$'RIVER TDI3 SumAbund' <- sum(TDI$Abundance[TDI$TDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
     outDF$'RIVER TDI4 SumAbund' <- sum(TDI$Abundance[TDI$TDI4 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
     outDF$'LAKE LTDI1 SumAbund' <- sum(TDI$Abundance[TDI$LTDI1 > 0],na.rm=TRUE) # sum abundance of scoring TDI3 taxa
-    outDF$'LAKE LTDI3 SumAbund' <- sum(TDI$Abundance[TDI$LTDI3 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
+    outDF$'LAKE LTDI2 SumAbund' <- sum(TDI$Abundance[TDI$LTDI2 > 0],na.rm=TRUE) # sum abundance of scoring TDI4 taxa
     outDF$'SAMPLE Total Abundance' <- sum(TDI$Abundance, na.rm=TRUE) # sum abundance - all taxa
     
     #### Plantic/Organic/Motile percentages:
@@ -70,14 +70,14 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   outDF$'SAMPLE Date' <- as.character(unique(TDI$Date))
   outDF$'SAMPLE ID' <- unique(TDI$SampleID)
         
-  ### LAKE LTDI3 scores:
+  ### LAKE LTDI2 scores:
    
   outDF$'LAKE totalabundsum' <- sum(TDI$Abundance,na.rm=TRUE)
-  outDF$'LAKE LTDI3 SumScore' <- sum(TDI$scoreL3,na.rm=TRUE) # sum of 
-  outDF$'LAKE w' <- outDF$'LAKE LTDI3 SumScore' / outDF$'LAKE LTDI3 SumAbund'
-  outDF$'LAKE LTDI3' <- (outDF$'LAKE w'  * 25) - 25
-  outDF$'LAKE EQR LTDI3' <- (100 - (outDF$'LAKE LTDI3')) / (100 - (unique(TDI$eLTDI3)))
-  outDF$'LAKE eLTDI3' <- unique(TDI$eLTDI3)
+  outDF$'LAKE LTDI2 SumScore' <- sum(TDI$scoreL3,na.rm=TRUE) # sum of 
+  outDF$'LAKE w' <- outDF$'LAKE LTDI2 SumScore' / outDF$'LAKE LTDI2 SumAbund'
+  outDF$'LAKE LTDI2' <- (outDF$'LAKE w'  * 25) - 25
+  outDF$'LAKE EQR LTDI2' <- (100 - (outDF$'LAKE LTDI2')) / (100 - (unique(TDI$eLTDI2)))
+  outDF$'LAKE eLTDI2' <- unique(TDI$eLTDI2)
     
   ### LAKE LTDI1 scores:
     
@@ -101,11 +101,11 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
 wbEQR <- lapply(split(dataTDI, dataTDI$'SAMPLE WaterbodyID'), function(EQR){ # split by waterbody
  Eqr <- 0
  std <- function(x) sd(x)/sqrt(length(x)) # standard error function
- Eqr$'LAKE WB STANDARD ERROR LTDI3' <- std(as.numeric(EQR$'LAKE EQR LTDI3')) # create SE for EQR
+ Eqr$'LAKE WB STANDARD ERROR LTDI2' <- std(as.numeric(EQR$'LAKE EQR LTDI2')) # create SE for EQR
  Eqr$'LAKE WB STANDARD ERROR LTDI1' <- std(as.numeric(EQR$'LAKE EQR LTDI1')) 
  Eqr$'RIVER WB STANDARD ERROR TDI3' <- std(as.numeric(EQR$'RIVER TDI3 EQR')) 
  Eqr$'RIVER WB STANDARD ERROR TDI4' <- std(as.numeric(EQR$'RIVER TDI4 EQR')) 
- Eqr$'LAKE WB EQR LTDI3'  <- mean(as.numeric(EQR$'LAKE EQR LTDI3')) # create mean waterbody EQR
+ Eqr$'LAKE WB EQR LTDI2'  <- mean(as.numeric(EQR$'LAKE EQR LTDI2')) # create mean waterbody EQR
  Eqr$'LAKE WB EQR LTDI1'  <- mean(as.numeric(EQR$'LAKE EQR LTDI1')) 
  Eqr$'RIVER WB EQR TDI3' <- mean(as.numeric(EQR$'RIVER TDI3 EQR')) 
  Eqr$'RIVER WB EQR TDI4' <- mean(as.numeric(EQR$'RIVER TDI4 EQR')) 
