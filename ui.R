@@ -6,7 +6,8 @@ shinyUI(pageWithSidebar(
               accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
     tags$hr(),
     checkboxInput('lake', 'Lake', TRUE),
-    checkboxInput('river', 'River', TRUE)            
+    checkboxInput('river', 'River', TRUE),  
+    downloadButton('downloadData', 'Download')
   ),
   mainPanel(
     tableOutput('contents')

@@ -26,4 +26,9 @@ shinyServer(function(input, output) {
  
     dataTDI
   })
+ # output$downloadTestData <- downloadHandler(
+  #  filename = function() { paste(input$dataset, '.csv', sep='') },
+   # content = function(file) {
+    #  write.csv(datasetInput(), file)})
+  output$download <- read
 })
