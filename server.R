@@ -1,12 +1,7 @@
 require(shiny)
 shinyServer(function(input, output) {
-  output$contents <- renderTable({
-    
-    # input$file1 will be NULL initially. After the user selects and uploads a 
-    # file, it will be a data frame with 'name', 'size', 'type', and 'datapath' 
-    # columns. The 'datapath' column will contain the local filenames where the 
-    # data can be found.
-    
+ 
+  datasetInput <- reactive({
     inFile <- input$file1
     
     if (is.null(inFile))
@@ -16,19 +11,27 @@ shinyServer(function(input, output) {
     source("darleqFunc.R")
     dataTDI <- darleqFunc(testdata)
     dataTDI <- dataTDI[,order(names(dataTDI), decreasing = TRUE)]
-       dataTDI$'SAMPLE ID' <- as.character(floor(as.numeric(dataTDI$'SAMPLE ID'))) # round sampleID
+    dataTDI$'SAMPLE ID' <- as.character(floor(as.numeric(dataTDI$'SAMPLE ID'))) # round sampleID
     row.names(dataTDI) <- NULL  # remove row names not required for display
     lake <- input$lake
     if (input$lake == TRUE & input$river == FALSE) # return different bits of table depending on river or lake
       return(dataTDI[,grepl("LAKE*|SAMPLE*", names(dataTDI))])
     if (input$river == TRUE & input$lake == FALSE)
       return(dataTDI[,grepl("RIVER*|SAMPLE*", names(dataTDI))])
- 
+    
     dataTDI
   })
- # output$downloadTestData <- downloadHandler(
-  #  filename = function() { paste(input$dataset, '.csv', sep='') },
-   # content = function(file) {
-    #  write.csv(datasetInput(), file)})
-  output$download <- read
+  
+  output$table <- renderTable({
+    datasetInput()
+  })
+  
+ 
+  output$downloadTest <- downloadHandler(
+    filename = function() { paste(input$file1, '.csv', sep='') },
+    content = function(file) {
+      write.csv(datasetInput(), file)
+    }
+  )
+
 })
