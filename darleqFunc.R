@@ -63,6 +63,8 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   outDF$'RIVER eTDI3' <- -25.36+(56.83*(log10(unique(TDI$Alk))))-(12.96*(log10(unique(TDI$Alk))*log10(unique(TDI$Alk))))+(3.21*(unique(TDI$DaresSeason)))
   outDF$'RIVER TDI4 EQR' <- (100-outDF$'RIVER TDI4')/(100-outDF$'RIVER eTDI4')
   outDF$'RIVER TDI3 EQR' <-  (100-outDF$'RIVER TDI3')/(100-outDF$'RIVER eTDI3')
+  outDF$'RIVER TDI4 EQR capped at 1.0' <- ifelse(outDF$'RIVER TDI4 EQR' >= 1 ,1, outDF$'RIVER TDI2 EQR')
+  outDF$'RIVER TDI3 EQR capped at 1.0' <- ifelse(outDF$'RIVER TDI3 EQR' >= 1 ,1, outDF$'RIVER TDI3 EQR')
     
   ### Date, Site, Sample
     
@@ -78,6 +80,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   outDF$'LAKE LTDI2' <- (outDF$'LAKE w'  * 25) - 25
   outDF$'LAKE EQR LTDI2' <- (100 - (outDF$'LAKE LTDI2')) / (100 - (unique(TDI$eLTDI2)))
   outDF$'LAKE eLTDI2' <- unique(TDI$eLTDI2)
+  outDF$'LAKE EQR LTDI2 capped at 1.0' <- ifelse(outDF$'LAKE EQR LTDI2' >= 1 ,1, outDF$'LAKE EQR LTDI2')
     
   ### LAKE LTDI1 scores:
     
@@ -85,8 +88,7 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   outDF$'LAKE w2' <- outDF$'LAKE LTDI1 SumScore' / outDF$'LAKE LTDI1 SumAbund'
   outDF$'LAKE LTDI1' <- (outDF$'LAKE w2' * 25) - 25
   outDF$'LAKE EQR LTDI1' <- (100 - (outDF$'LAKE LTDI1')) / (100 - (unique(TDI$eLTDI1)))
- # outDF$'LAKE EQR LTDI1 capped at 1.0' <- 1[outDF$'LAKE EQR LTDI1' >= 1]
- # outDF$'LAKE EQR LTDI1 capped at 1.0' <- outDF$'LAKE EQR LTDI1'[outDF$'LAKE EQR LTDI1' < 1]  
+  outDF$'LAKE EQR LTDI1 capped at 1.0' <- ifelse(outDF$'LAKE EQR LTDI1' >= 1 ,1, outDF$'LAKE EQR LTDI1')
   
  lengthTDI <- length(TDI) # how many columns in input data
    if (lengthTDI > 7){      # does input data include extra column for waterbodyID
