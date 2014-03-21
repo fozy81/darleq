@@ -85,7 +85,9 @@ darleqFunc <- function(diatomTDI){  # create function called darleqFunc
   outDF$'LAKE w2' <- outDF$'LAKE LTDI1 SumScore' / outDF$'LAKE LTDI1 SumAbund'
   outDF$'LAKE LTDI1' <- (outDF$'LAKE w2' * 25) - 25
   outDF$'LAKE EQR LTDI1' <- (100 - (outDF$'LAKE LTDI1')) / (100 - (unique(TDI$eLTDI1)))
-     
+ # outDF$'LAKE EQR LTDI1 capped at 1.0' <- 1[outDF$'LAKE EQR LTDI1' >= 1]
+ # outDF$'LAKE EQR LTDI1 capped at 1.0' <- outDF$'LAKE EQR LTDI1'[outDF$'LAKE EQR LTDI1' < 1]  
+  
  lengthTDI <- length(TDI) # how many columns in input data
    if (lengthTDI > 7){      # does input data include extra column for waterbodyID
    outDF$'SAMPLE WaterbodyID' <- unique(TDI$WaterbodyID)  # add optional waterbodyID to output data
